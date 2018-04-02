@@ -1,0 +1,49 @@
+{% extends 'blog/base.html' %}
+{% load staticfiles %}
+
+{% block site_info %}
+{% if title %}
+<title>{{ title }}</title>
+<meta name="keywords" content="{{ keywords }}"/>
+<meta name="description" content="{{ description }}" />
+{% else %}
+<title>{{ SITE_NAME }}</title>
+<meta name="keywords" content="{{ SITE_KEYWORDS }}"/>
+<meta name="description" content="{{ SITE_DESCP }}" />
+{% endif %}
+{% endblock site_info %}
+
+                    {% block content %}
+                    {% for post in post_list %}
+		            <div class="post">
+                        <div id="author_time">
+                            <span>{{ post.author }}&nbsp;&nbsp;&nbsp;{{ post.date_created|timesince }}前</span>
+                        </div>
+			            <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+			            <p style="color: #666666">{{ post.excerpt }}</p>
+
+			            <div class="movie">
+				            <ul class="post-footer">
+					            <li id="category"><span><a href="{% url 'blog:category' post.category.slug %}">Category : {{ post.category.name }}</a> </span></li>
+					            <li><a href="{{ post.get_absolute_url }}"><i></i>{{ post.comment_set.all.count }}</a></li>
+                                <li id="views"><a href="{{ post.get_absolute_url }}"><i></i>{{ post.click_count }}</a></li>
+				            </ul>
+				            <a href="{{ post.get_absolute_url }}" class="more">Read More </a>
+			                <div class="clearfix"> </div>
+			            </div>
+		            </div>
+                    {% empty  %}
+                        <p>暂时没有发布文章</p>
+                    {% endfor %}
+
+			        <div class="older-top" style="text-align: center;" >
+                        {% if post_list.has_previous %}
+                        <a href="?page={{ post_list.previous_page_number }}" class="older"><i> </i>上一页</a>
+                        {% endif %}
+                        <span id="paginate">第{{ post_list.number }}页/共{{ post_list.paginator.num_pages }}页</span>
+                        {% if post_list.has_next %}
+				        <a href="?page={{ post_list.next_page_number }}" class="older top-old">下一页<i > </i></a>
+                        {% endif %}
+				        <div class="clearfix"> </div>
+			        </div>
+                    {% endblock content %}

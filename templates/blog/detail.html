@@ -1,0 +1,289 @@
+{% extends 'blog/base.html' %}
+{% load staticfiles %}
+{% load blog_tags %}
+{% load comment_tags %}
+{% block site_info %}
+<meta name="keywords" content="{{ keywords }}" />
+<meta name="description" content="{{ description }}" />
+<title>{{ title }}</title>
+{% endblock site_info %}
+{% block css %}
+ <link rel="stylesheet" type="text/css" href="{% static 'blog/css/prism.css' %}" />
+{% endblock css %}
+{% block article %}
+<div class="article">
+    <div class="breadcrumbs">
+        <a title="返回首页" href="/"><i class="fa fa-home"></i></a>
+        <small> > </small>
+        <a href="{% url 'blog:category' post.category.slug %}">{{ post.category.name }}</a>
+        <small> > </small>
+        <span>{{ post.title }}</span>
+    </div>
+    <header class="article-header">
+        <h1 class="article-title">
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </h1>
+        <div class="preem">
+            <span>
+                <i class="fa fa-list-alt"></i>
+                <a href="{% url 'blog:category' post.category.slug %}">{{ post.category.name }}</a>
+            </span>
+            <span>
+                <i class="fa fa-user"></i>
+                <a href="javascript:void(0);">{{ post.author.username }}</a>
+            </span>
+            <span>
+                <i class="fa fa-clock-o"></i>
+                {{ post.date_created|timesince }}
+            </span>
+            <span>
+                <i class="fa fa-eye"></i>
+                {{ post.click_count }}
+            </span>
+            <span>
+                <i class="fa fa-comment-o"></i>
+                <a href="">{{ post.comment_set.all.count }}评论</a>
+            </span>
+        </div>
+    </header>
+    <article class="article-content">
+        {{ post.content|safe }}
+    </article>
+
+    <div class="like_share">
+        <a href="javascript:void(0)" id="like-btn"
+           class="button button-glow button-border button-rounded">
+            <i class="fa fa-heart-o"></i>
+            喜欢
+            <span class="like-count">0</span>
+        </a>
+        <!-- JiaThis Button BEGIN -->
+        <div class="jiathis_style_32x32">
+            <a class="jiathis_button_tsina"></a>
+            <a class="jiathis_button_weixin"></a>
+            <a class="jiathis_button_cqq"></a>
+            <div class="clear"></div>
+        </div>
+        <script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+        <!-- JiaThis Button END -->
+    </div>
+</div>
+{% endblock article %}
+{% block comment %}
+<div class="pinglun" id="评论">
+    <div class="comment-form-header">
+        {% if request.user.is_authenticated %}
+        <img src="{{ request.user.get_avatar_url }}">
+        <div class="header-username">
+            <span>
+                {{ request.user.username }}
+                <i class="fa fa-edit"></i>
+            </span>
+            <span id="reply-action">回复：</span>
+            <span id="recipient"></span>
+        </div>
+        {% else %}
+        <span class="remind-login">尚未登录，请<a href="{% url 'account_login' %}?next={{ request.path }}">登录</a>后参与评论</span>
+        {% endif %}
+    </div>
+    {% generate_form_for post as form %}
+    <form class="comment-form" method="post" action="{% url 'easy_comment:submit_comment' %}">
+        {% csrf_token %}
+        {{ form.media }}
+        {% for field in form %}
+        {{ field }}
+        {{ field.errors }}
+        {% endfor %}
+        <button class="button button-primary-flat button-rounded pull-right {% if not request.user.is_authenticated %}
+        no-login
+        {% endif %}" type="submit" id="submit-button">
+            <i class="fa fa-check-square-o"></i>
+            提交评论
+        </button>
+    </form>
+    <button class="button button-primary-flat button-rounded pull-right" id="cancel-button">
+        <i class="fa fa-undo"></i>
+        取消回复
+    </button>
+    <div class="clear"></div>
+
+    <h2>
+        评论
+        {% get_comments_count post as comment_count %}
+        {% get_comments_user_count post as comment_user_count %}
+        <span class="pull-right">{{ comment_user_count }}人参与 | {{ comment_count }}条评论</span>
+    </h2>
+    <div class="pinglun-list">
+    </div>
+</div>
+{% endblock %}
+{% block sider %}
+<div class="subblock" id="title_list">
+    <h3>文章目录</h3>
+    <ul>
+        {{ title_tree|safe }}
+        <li>
+            <a href="#评论">评论</a>
+        </li>
+    </ul>
+</div>
+{% endblock sider %}
+{% block script %}
+<script src="{% static 'ckeditor/ckeditor/plugins/prism/lib/prism/prism_patched.min.js' %}"></script>
+<script src="{% static 'blog/html5_blue/js/jquery.sticky.elements.js' %}"></script>
+<script type="text/javascript">
+    $('.article-content').find(':header').each(function () {
+        $(this).attr('id', $(this).text());
+    });
+    $('.article-content img').removeAttr('style');
+    $('.pinglun-text img').removeAttr('style');
+    $(".django-ckeditor-widget").removeAttr('style');
+    $("#submit-button").click(function (e) {
+        e.preventDefault();
+        if ($(this).hasClass('no-login')){
+            alert("请登录后参与评论！");
+            return false;
+        }
+        if ($("#id_honeypot").val().length > 0){
+                alert("spam!");
+                return false;
+        }
+        pid = $('#id_parent option:selected').val();
+        if (sessionStorage.getItem('reply')) {
+            pid = sessionStorage.getItem('pid');
+        }
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}' }});
+        $.ajax({
+            type: 'post',
+            url: "{% url 'easy_comment:submit_comment' %}",
+            data:{
+                    'honeypot':$("#id_honeypot").val(),
+                    'content':CKEDITOR.instances.id_content.getData(),
+                    'parent':pid,
+                    'post':$('#id_post option:selected').val()
+            },
+            dataType:'json',
+            success:function (json) {
+                if (json.msg == 'success!') {
+                    $(".pinglun-list").html(json.html);
+                    CKEDITOR.instances.id_content.setData("");
+                    $("#cancel-button").css('display', 'none');
+                    $("#reply-action").css('display', 'none');
+                    $("#recipient").css('display', 'none');
+                    sessionStorage.removeItem('reply');
+                    $('.pinglun h2 span').text( json.user_num + "人参与 | " + json.comment_num + "条评论");
+                    $('.pinglun-text img').removeAttr('style');
+                    Prism.highlightAll();
+                    empty_page = false;
+                    block_request = false;
+                    page = 1;
+                }
+                else {
+                    alert(json.msg);
+                }
+            },
+            error:function (json) {
+                alert("Something is wrong! lol");
+            }
+        });
+    });
+    $(".reply").live('click', function () {
+        if ($("#submit-button").hasClass('no-login')) {
+            alert('请登录后参与评论！');
+            return false;
+        }
+        $("#recipient").text($(this).data('name'));
+        $("#reply-action").css('display', 'inline-block');
+        $("#recipient").css('display', 'inline-block');
+        $("#cancel-button").css('display', 'inline-block');
+        sessionStorage.setItem('reply', true);
+        sessionStorage.setItem('pid', $(this).attr('id'));
+    });
+    $("#cancel-button").click(function () {
+        $(this).css('display', 'none');
+        $("#reply-action").css('display', 'none');
+        $("#recipient").css('display', 'none');
+        sessionStorage.removeItem('reply');
+    });
+    $.get(
+        "{% url 'easy_comment:post_comments_list' post.id %}",
+        function (data) {
+            $(".pinglun-list").html(data.html);
+            Prism.highlightAll();
+            $('.pinglun-text img').removeAttr('style');
+        }
+    );
+    var page = 1;
+    var empty_page = false;
+    var block_request = false;
+    $(window).scroll(function () {
+        var margin = $(document).height() - $(window).height() - 200;
+        if ($(window).scrollTop() > margin && empty_page == false && block_request == false) {
+            block_request = true;
+            page += 1;
+            $.get(
+                "{% url 'easy_comment:post_comments_list' post.id %}?page=" + page,
+                function(data) {
+                    if(data == '') {
+                    empty_page = true;
+                }
+                else {
+                    block_request = false;
+                    $(".pinglun-list").append(data.html);
+                    Prism.highlightAll();
+                    $('.pinglun-text img').removeAttr('style');
+                }
+            });
+        }
+    });
+    var width = $(".right").width();
+    $("#title_list").width(width).stikify({rate: 2, cieling: 0});
+    $("#like-btn").click(function () {
+        if ($(this).hasClass('no-login')){
+            alert("请登录后参与此操作~");
+            return false;
+        }
+        $.ajax({
+            type: 'post',
+            url: "{% url 'easy_comment:post_favour' post.id %}",
+            data: {'action': $(this).data('action')},
+            dataType: 'json',
+            success: function (data) {
+            },
+            error: function (data) {
+                alert(data.status);
+                return false;
+            }
+        });
+        var n = $(this).find('.like-count').text();
+        if ($(this).data('action') == 'like'){
+            $(this).css({'background-color': '#1abc9c', 'color': '#fff'}).removeClass('button-glow');
+            $(this).find('i').removeClass('fa-heart-o').addClass('fa-heart');
+            $(this).data('action', 'unlike');
+            $(this).find('.like-count').text(Number(n) + 1);
+        }
+        else {
+            $(this).css({'background-color': '#fff', 'color': '#1abc9c'}).addClass('button-glow');
+            $(this).find('i').removeClass('fa-heart').addClass('fa-heart-o');
+            $(this).data('action', 'like');
+            $(this).find('.like-count').text(Number(n) - 1);
+        }
+    });
+    $.get(
+        "{% url 'easy_comment:post_favour_count' post.id %}",
+        function (data) {
+            $("#like-btn").data('action', 'like');
+            if (data.status == 1){
+                $("#like-btn").css({'background-color': '#1abc9c', 'color': '#fff'}).removeClass('button-glow');
+                $("#like-btn").find('i').removeClass('fa-heart-o').addClass('fa-heart');
+                $("#like-btn").data('action', 'unlike');
+            }
+            if (data.status == -1) {
+                $("#like-btn").addClass('no-login')
+            }
+            $('.like-count').text(data.count);
+        }
+    );
+</script>
+{% endblock script %}

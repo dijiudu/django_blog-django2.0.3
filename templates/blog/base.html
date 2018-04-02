@@ -1,0 +1,252 @@
+{% load staticfiles %}
+{% load blog_tags %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+{% block site_info %}
+<meta name="keywords" content="{{ SITE_KEYWORDS }}" />
+<meta name="description" content="{{ SITE_DESCP }}" />
+<title>{{ SITE_NAME }}</title>
+{% endblock site_info %}
+<meta name="author" content="maked by Aaron Zhao" />
+<meta name="baidu-site-verification" content="zdoL8Inhps" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" media="all" href="{% static 'blog/html5_blue/css/style.css' %}" />
+<link href="https://cdn.bootcss.com/Buttons/2.0.0/css/buttons.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+{% block css %}
+{% endblock css %}
+<script src="https://cdn.bootcss.com/jquery/1.8.3/jquery.min.js"></script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?aa83bd353f51db2b2df5b49ec8b30a3f";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https'){
+   bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+  bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script type="application/javascript" src="{% static 'notifications/notice.js' %}"></script>
+</head>
+<body>
+    <div class="top"> <a class="totop" title="回顶部"><i class="fa fa-arrow-up fa-2x"></i></a>
+      <!--
+      <div class="topmenu">
+        <ul id="menu-top" class="wrap">
+          <li><a>您好！欢迎来到我的博客！</a></li>
+        </ul>
+      </div>
+      -->
+      <div class="wrap page-header">
+        <h1>
+            <a href="/">Aaron Zhao 的个人博客</a>
+
+        </h1>
+        <div class="contact">
+          <li class="rss"><a href="{% url 'blog:rss_feed' %}" title="订阅本站"><i class="fa fa-rss fa-2x"></i></a></li>
+          <li class="qq"><a href="http://wpa.qq.com/msgrd?v=3&uin=370297300&site=qq&menu=yes" target="_blank" title="QQ联系"><i class="fa fa-qq fa-2x"></i></a></li>
+          <li class="github"><a href="https://github.com/r26zhao" title="Github" target="_blank"><i class="fa fa-github-square fa-2x"></i></a></li>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="wrap zwrap">
+          <div class="navbar-header">
+            <li class="navbar-toggle"> <i class="fa fa-list fa-2x"></i> </li>
+            <li style="float:right;display:inline-block">
+              <div class="toggle-search"><i class="fa fa-search fa-2x"></i></div>
+            </li>
+            <li style="float:right;">
+              <div class="search-expand">
+                <div class="search-expand-inner">
+                  <form onSubmit="return checkSearchForm()" method="post" name="formsearch" id="searchform" class="searchform themeform" action="/plus/search.php" >
+                    <input type="text" class="search" name="q" onblur="if(this.value=='')this.value='按回车键搜索...';" onfocus="if(this.value=='按回车键搜索...')this.value='';" value="按回车键搜索..." placeholder="按回车键搜索">
+                    <input type="hidden" value="title" name="show">
+                    <input type="hidden" value="1" name="tempid">
+                    <input type="hidden" value="news" name="tbname">
+                    <input name="mid" value="1" type="hidden">
+                    <input name="submit" value="search" type="hidden">
+                  </form>
+                </div>
+              </div>
+            </li>
+          </div>
+          <div class="navbar-collapse">
+            <ul>
+              <li class="menu-item {% if request.path == '/' %}
+              current_page_item
+              {% endif %}"><a href="/">首页</a></li>
+              <li class="menu-item {% if request.path == '/category/django/' or post.category.name == 'Django' %}
+              current_page_item
+              {% endif %}"><a href="{% url 'blog:category' 'django' %}">Django</a>
+              </li>
+              <li class="menu-item {% if request.path == '/category/python-study-notes/' or post.category.name == 'Python笔记' %}
+              current_page_item
+              {% endif %}"><a href="{% url 'blog:category' 'python-study-notes' %}">Python</a>
+              </li>
+              <li class="menu-item {% if request.path == '/category/resources-share/' or post.category.name == '资源分享' %}
+                current_page_item
+              {% endif %}"><a href="{% url 'blog:category' 'resources-share' %}">资源分享</a>
+                <ul class="sub-menu">
+
+                </ul>
+              </li>
+              <li class="menu-item ">{% if request.path == '/my-projects/' %}
+                current_page_item
+              {% endif %}<a href="https://github.com/r26zhao" target="_blank">我的项目</a>
+                <ul class="sub-menu">
+
+                </ul>
+              </li>
+              <li class="menu-item "><a href="/api/">API</a></li>
+              <li class="menu-item ">{% if request.path == '/leave-message/' %}
+                current_page_item
+              {% endif %}<a href="/leave-message/">给我留言</a></li>
+              {% if not request.user.is_authenticated  %}
+              <li class="menu-item" id="index-login">
+                  <a href="{% url 'account_login' %}?next={{ request.path }}" {% if request.path == '/accounts/signup/' %}
+                  style="background-color: #2c3e50"
+                  {% endif %}>登录</a>
+              </li>
+              <li class="menu-item {% if request.path == '/accounts/signup/' %}
+              current-menu-item
+              {% endif %}" id="index-register"><a href="{% url 'account_signup' %}">注册</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="notic">
+        <div class="wrap subnotic"><i class="fa fa-bullhorn"></i> 欢迎来到我的博客！</div>
+      </div>
+    </div>
+
+    <div class="middle">
+    {% block login %}
+    {% endblock login %}
+    </div>
+
+    <div class="wrap">
+      <div class="main">
+        {% block slider %}
+        {% endblock slider %}
+        {% block post_list %}
+        {% endblock post_list %}
+        {% block article %}
+        {% endblock article %}
+        {% block comment %}
+        {% endblock comment %}
+      </div>
+
+    <div class="sider">
+      <div class="right">
+        {% block dashboard %}
+        {% if request.path == '/' and not request.user.is_authenticated %}
+
+          <div class="author">
+          <div class="topauthor">
+              {% get_blog_owner as owner %}
+              <img alt="" src="{{ owner.avatar }}" class="avatar avatar-100 photo" height="100" width="100">
+              <span class="intag">博客主人</span>
+              <span class="names">Aaron Zhao</span>
+              <ul class="personal_tag tag_cloud">
+                  <a href="javascript:void(0);">90后</a>
+                  <a href="javascript:void(0);">留学狗</a>
+                  <a href="javascript:void(0);">Call me 老A</a>
+              </ul>
+          </div>
+          <span class="bot"></span> </div>
+        <div class="butauthor author">
+          <li> <span class="bignum" ID="bignum1">{{ owner.post_num }}</span>文章总数 </li>
+          <li> <span class="bignum">{{ owner.view_num }}</span>访问次数 </li>
+          <li> <span class="bignum" ID="days"></span>建站天数 </li>
+        </div> 
+        {% endif %}
+        {% if request.user.is_authenticated %}
+        <div class="butauthor author">
+          <div id="user_info">
+              <img src="{{ request.user.get_avatar_url}}" alt="头像"/>
+          </div>
+          <div id="dashboard">
+              <ul>
+                  <li style="color: #203e50">{{ request.user.username }}</li>
+                  <li><a href="{% url 'blog:account_profile' %}">设置</a></li>
+
+                  <!-- by tiandong 
+                     <li><a href="{% url 'notifications:unread' %}" target="_blank">
+                        消息
+                        <span class="unread-count"></span>
+                      </a>
+                  </li> -->
+
+                  <li><a href="{% url 'account_logout' %}?next={{ request.path }}">登出</a></li>
+              </ul>
+          </div>
+        </div>
+        {% endif %}
+        {% endblock dashboard %}
+        {% block sider %}
+        {% endblock sider %}
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+    function NewDate(str) {
+    str = str.split('-');
+    var date = new Date();
+
+    date.setUTCHours(0, 0, 0, 0);
+    return date;
+    }
+    function showsectime() {
+    var birthDay =NewDate("2016-05-29");
+    var today=new Date();
+    var timeold=today.getTime()-birthDay.getTime();
+    var sectimeold=timeold/1000
+    var secondsold=Math.floor(sectimeold);
+    var msPerDay=24*60*60*1000;
+    var e_daysold=timeold/msPerDay;
+    var daysold=Math.floor(e_daysold);
+    var e_hrsold=(daysold-e_daysold)*-24;
+    var hrsold=Math.floor(e_hrsold);
+    var e_minsold=(hrsold-e_hrsold)*-60;
+    var minsold=Math.floor((hrsold-e_hrsold)*-60);
+    var seconds=Math.floor((minsold-e_minsold)*-60).toString();
+    document.getElementById("bignum").innerHTML = daysold;
+    setTimeout(showsectime, 1000);
+    }
+    showsectime();
+    </script>
+    -->
+</div>
+    <div class="clear"></div>
+    <div class="footer">
+      <div class="wrap">
+        <p class="ffooter">Copyright &copy; 2018 Aaron Zhao的博客 | 鲁ICP备17020303号-1 </p>
+      </div>
+    </div>
+<script type="text/javascript" src="{% static 'blog/html5_blue/js/yycm.js' %}"></script>
+<script>
+    var s1 = '2017-05-05';//设置为你的建站时间
+    s1 = new Date(s1.replace(/-/g, "/"));
+    s2 = new Date();
+    var days = s2.getTime() - s1.getTime();
+    var number_of_days = parseInt(days / (1000 * 60 * 60 * 24));
+    document.getElementById('days').innerHTML = number_of_days;
+</script>
+{% block script %}
+{% endblock script %}
+</body>
+</html>
