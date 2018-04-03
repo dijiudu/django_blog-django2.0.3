@@ -184,12 +184,11 @@ var _hmt = _hmt || [];
                   <li style="color: #203e50">{{ request.user.username }}</li>
                   <li><a href="{% url 'blog:account_profile' %}">设置</a></li>
 
-                  <!-- by tiandong 
-                     <li><a href="{% url 'notifications:unread' %}" target="_blank">
+                  <li><a href="{% url 'notifications:unread' %}" target="_blank">
                         消息
                         <span class="unread-count"></span>
                       </a>
-                  </li> -->
+                  </li>
 
                   <li><a href="{% url 'account_logout' %}?next={{ request.path }}">登出</a></li>
               </ul>

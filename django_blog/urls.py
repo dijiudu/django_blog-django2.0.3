@@ -24,6 +24,8 @@ import notifications.urls
 from rest_framework.routers import DefaultRouter
 from api import views
 
+import xadmin
+
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'posts', views.PostViewSet)
@@ -37,7 +39,7 @@ sitemaps = {
 }
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', xadmin.site.urls),
     url(r'', include('blog.urls')),
     url(r'', include('easy_comment.urls')),
     url(r'', include('ckeditor_uploader.urls')),
