@@ -78,6 +78,6 @@ redis-server.exe redis.conf
 redis-cli.exe -h 127.0.0.1 -p 6379
 ```
 
-# django 自带admin 丢失样式，找不到css, 替换为xadmin
+## django 自带admin 丢失样式，找不到css, 替换为xadmin
 
-# 所有的 request.user.is_authenticated() 修改为 request.user.is_authenticated
+## 所有的 request.user.is_authenticated() 修改为 request.user.is_authenticated
