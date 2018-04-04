@@ -1,6 +1,6 @@
 # django_blog-django2.0.3+ python3.6
 
-# �޸ĵ�
+# 修改点
 
 ## setting.py
 ```
@@ -78,5 +78,6 @@ redis-server.exe redis.conf
 redis-cli.exe -h 127.0.0.1 -p 6379
 ```
 
+# django 自带admin 丢失样式，找不到css, 替换为xadmin
 
-# ���е� request.user.is_authenticated() �޸�Ϊ request.user.is_authenticated
+# 所有的 request.user.is_authenticated() 修改为 request.user.is_authenticated
